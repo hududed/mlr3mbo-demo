@@ -190,8 +190,7 @@ experiment <- function(data, metadata) {
     
     # Save the data table as a CSV file in the same directory
     data.table::fwrite(data, paste0(dir_path, "/output.csv"))
-
-    print("mlr3mbo proposals finished. Results file is saved at: ", dir_path)
+    print(paste0("mlr3mbo proposals finished. Results file is saved at: ", dir_path))
     return(data)
 
     }
