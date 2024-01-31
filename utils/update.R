@@ -175,6 +175,10 @@ experiment <- function(data, metadata) {
 
     x2_dt <- as.data.table(x2)
     full_data <- rbindlist(list(full_data, x2_dt), fill = TRUE)
+    # Recalculate the Cu column
+    full_data[, Cu := 100 - Reduce(`+`, .SD), .SDcols = -ncol(full_data)]
+    # Reorder the columns to move Cu to the left-most position
+    setcolorder(full_data, c("Cu", setdiff(names(full_data), "Cu")))
     print(full_data)
 
     # Save the data table as a CSV file in the same directory
