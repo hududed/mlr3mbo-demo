@@ -29,12 +29,14 @@ load_file <- function(files, pattern) {
 
 # load_archive must be modified to load the latest metadata-*.json 
 load_archive <- function(metadata) {
+    # Subtract 1 from batch_number to load from the previous batch
+    previous_batch_number = as.integer(metadata$batch_number) - 1
     # Get a list of all *.rds files in the bucket
-    files = list.files(path = paste0(metadata$bucket_name, "/", metadata$user_id, "/", metadata$table_name, "/", metadata$batch_number), pattern = "*.rds", full.names = TRUE)
+    files = list.files(path = paste0(metadata$bucket_name, "/", metadata$user_id, "/", metadata$table_name, "/", previous_batch_number), pattern = "*.rds", full.names = TRUE)
 
-    # Print out the files and metadata for debugging
-    print(files)
-    print(metadata)
+    # # Print out the files and metadata for debugging
+    # print(files)
+    # print(metadata)
 
 
     # Load the acqf-, acqopt-, and archive- files
@@ -155,6 +157,10 @@ experiment <- function(data, metadata) {
     x2_dt <- as.data.table(x2)
     full_data <- rbindlist(list(full_data, x2_dt), fill = TRUE)
     print(full_data)
+
+    # Save the data table as a CSV file in the same directory
+    dir_path = paste0(metadata$bucket_name, "/", metadata$user_id, "/", metadata$table_name, "/", metadata$batch_number)
+    data.table::fwrite(full_data, paste0(dir_path, "/output.csv"))
     print(paste0("mlr3mbo update is finished. Results file is saved at: ", dir_path))
 
     return(full_data)
