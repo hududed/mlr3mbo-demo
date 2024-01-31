@@ -55,7 +55,7 @@ save_archive <- function(archive, acq_function, acq_optimizer, metadata) {
     # new_batch_number = as.integer(metadata$batch_number) + 1
 
     # Define the directory path
-    dir_path = paste0(metadata$bucket_name, "/", metadata$user_id, "/", metadata$table_name, "/", new_batch_number)
+    dir_path = paste0(metadata$bucket_name, "/", metadata$user_id, "/", metadata$table_name, "/", metadata$batch_number)
     
     # Create the directory if it doesn't exist
     if (!dir.exists(dir_path)) {
