@@ -6,6 +6,23 @@ library(data.table)
 library(tibble)
 library(R.utils)
 
+round_to_nearest <- function(x, metadata) {
+  to_nearest = metadata$to_nearest
+  if (is.data.table(x) || is.data.frame(x)) {
+    x = lapply(x, function(col) {
+      if (is.numeric(col)) {
+        return(round(col / to_nearest) * to_nearest)
+      } else {
+        return(col)
+      }
+    })
+    x = setDT(x) # Convert the list to a data.table
+  } else if (is.numeric(x)) {
+    x = round(x / to_nearest) * to_nearest
+  }
+  return(x)
+}
+
 load_file <- function(files, pattern) {
     # Check if there are files that match the pattern
     matched_files = grep(pattern, files, value = TRUE)
@@ -73,6 +90,7 @@ update_and_optimize <- function(acq_function, acq_optimizer, tmp_archive, candid
     acq_function$update()
     tmp_archive$add_evals(xdt = candidate_new, xss_trafoed = transform_xdt_to_xss(candidate_new, tmp_archive$search_space), ydt = lie)
     candidate_new = acq_optimizer$optimize()
+    candidate_new = round_to_nearest(candidate_new, metadata)
     return(candidate_new)
 }
 
@@ -82,6 +100,7 @@ add_evals_to_archive <- function(archive, acq_function, acq_optimizer, data, q, 
     acq_function$surrogate$update()
     acq_function$update()
     candidate = acq_optimizer$optimize()
+    candidate = round_to_nearest(candidate, metadata)
     print(candidate)
     tmp_archive = archive$clone(deep = TRUE)
     acq_function$surrogate$archive = tmp_archive
