@@ -32,6 +32,11 @@ load_archive <- function(metadata) {
     # Get a list of all *.rds files in the bucket
     files = list.files(path = paste0(metadata$bucket_name, "/", metadata$user_id, "/", metadata$table_name, "/", metadata$batch_number), pattern = "*.rds", full.names = TRUE)
 
+    # Print out the files and metadata for debugging
+    print(files)
+    print(metadata)
+
+
     # Load the acqf-, acqopt-, and archive- files
     acqf = load_file(files, "acqf-")
     acqopt = load_file(files, "acqopt-")
