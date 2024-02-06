@@ -5,7 +5,7 @@ library(bbotk)
 library(data.table)
 library(tibble)
 
-source("utils/processing.R")
+source("mlr3mbo-demo/utils/processing.R")
 
 # # same as in utils/update.R?
 # round_to_nearest <- function(x, metadata) {
