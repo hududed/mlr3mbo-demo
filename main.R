@@ -5,7 +5,7 @@ library(mlr3learners)
 library(bbotk)
 library(data.table)
 library(tibble)
-source("utils/batch.R")
+source("utils/propose.R")
 #%%
 file = 'CuAlMnNi-data.csv'
 data <- as.data.table(read.csv(file))
@@ -54,5 +54,50 @@ metadata <- list(
 
 #%%
 # Run the experiment function
-result <- experiment(dt, metadata)
+result <- propose_experiment(dt, metadata)
 
+
+# %%
+
+# Import functions (see https://github.com/hududed/mlr3mbo-demo.git for the source files)
+# FOR UPDATES MAKE SURE THIS IS SOURCED, NOT mlr3mbo-demo/utils/batch.R!
+source("mlr3mbo-demo/utils/update.R")
+
+# %%
+# Please upload the new updated file in your session (See Folder icon on the left pane)
+file = 'updated.csv'
+data <- as.data.table(read.csv(file))
+data
+# %%
+metadata <- list(
+
+  # RECREATE FIRST BATCH FOLDERS FOLLOWING THIS STRUCTURE, AND UPLOAD THE ASSOCIATED THREE RDS FILES there
+  # e.g. my_bucket/user_id/CuAlMnNi/1
+  bucket_name = "my_bucket",  # The name of the bucket where the archive will be saved
+  user_id = "my_id",  # The user ID
+  table_name = "CuAlMnNi",  # The name of the table
+  parameter_info = list(
+    Al = "float",  # The type of the Al parameter
+    Mn = "float",  # The type of the Mn parameter
+    Ni = "float"  # The type of the Ni parameter
+  ),
+  parameter_ranges = list(
+    Al = "(15, 19)",  # The range of the Al parameter
+    Mn = "(8,13)",  # The range of the Mn parameter
+    Ni = "(0,3)"  # The range of the Ni parameter
+  ),
+  output_column_names = c("DSC_Af"),  # The names of the output columns
+  direction = "minimize",  # The direction of the optimization ("minimize" or "maximize")
+  num_random_lines = 15,  # The number of random lines to generate
+  to_nearest = 0.2,  # The value to round to
+
+  # CHANGE THIS
+  # If you are running batch 2, it will expect three RDS files in my_bucket/user_id/CuAlMnNi/1
+  # If you are running batch 3, it will expect three RDS files in my_bucket/user_id/CuAlMnNi/2
+  batch_number = "2"  # The batch number for the second batch
+)
+
+# %%
+# Run the experiment (FOR UPDATES MAKE SURE mlr3mbo-demo/utils/update.R is sourced, not batch.R)
+new_result <- update_experiment(data, metadata)
+# %%
