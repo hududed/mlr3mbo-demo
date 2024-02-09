@@ -31,3 +31,26 @@ def interpolate_data(data, x_grid, y_grid, column):
 def create_weighted_sum(data, weight1, weight2, column1, column2):
     data["Weighted Sum"] = weight1 * data[column1] + weight2 * data[column2]
     return data
+
+
+def clean_column_names(data):
+    # Perform the cleaning
+    cleaned_columns = (
+        data.columns.str.strip()
+        .str.lower()
+        .str.replace(" ", "_")
+        .str.replace("(", "")
+        .str.replace(")", "")
+        .str.replace("#", "number")
+        .str.replace("°c", "c")
+        .str.replace("j/g", "j_per_g")
+        .str.replace("at%", "at_percent")
+    )
+
+    # Create a dictionary that maps the old names to the new ones
+    column_mapping = dict(zip(data.columns, cleaned_columns))
+
+    # Replace the column names in place
+    data.rename(columns=column_mapping, inplace=True)
+
+    return data

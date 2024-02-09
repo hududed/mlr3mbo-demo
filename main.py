@@ -13,11 +13,6 @@
 #!chmod +x geckodriver
 #!mv geckodriver /usr/local/bin/
 
-
-# Set up the virtual display
-# from pyvirtualdisplay import Display
-# display = Display(visible=0, size=(1024, 768))
-# display.start()
 # %%
 
 
@@ -32,6 +27,7 @@ from visualization.data_processing import (
     define_grid,
     interpolate_data,
     create_weighted_sum,
+    clean_column_names,
 )
 from visualization.plotting import (
     create_hover_tool,
@@ -46,9 +42,35 @@ import numpy as np
 
 # Read the data
 data = read_data("CuAlMnNi-data.csv")
+print(data.columns)
 
+data = clean_column_names(data)
+# # Perform the cleaning
+# cleaned_columns = (
+#     data.columns.str.strip()
+#     .str.lower()
+#     .str.replace(" ", "_")
+#     .str.replace("(", "")
+#     .str.replace(")", "")
+#     .str.replace("#", "number")
+#     .str.replace("°c", "c")
+#     .str.replace("j/g", "j_per_g")
+#     .str.replace("at%", "at_percent")
+# )
+
+# # Create a dictionary that maps the old names to the new ones
+# column_mapping = dict(zip(data.columns, cleaned_columns))
+
+# # Replace the column names in place
+# data.rename(columns=column_mapping, inplace=True)
+
+print(data.columns)
+
+# %%
 # Perform PCA
-data = perform_pca(data, ["Cu (at%)", "Al (at%)", "Mn (at%)", "Ni (at%)"])
+data = perform_pca(
+    data, ["cu_at_percent", "al_at_percent", "mn_at_percent", "ni_at_percent"]
+)
 
 # Define the grid
 x = np.linspace(data["PC1"].min(), data["PC1"].max(), 500)
@@ -56,13 +78,13 @@ y = np.linspace(data["PC2"].min(), data["PC2"].max(), 500)
 x_grid, y_grid = define_grid(data, 500)
 
 # Interpolate the DSC Af values
-z1 = interpolate_data(data, x_grid, y_grid, "DSC Af (°C)")
+z1 = interpolate_data(data, x_grid, y_grid, "dsc_af_c")
 
 # Interpolate the Enthalpy values
-z2 = interpolate_data(data, x_grid, y_grid, "Enthalpy (J/g)")
+z2 = interpolate_data(data, x_grid, y_grid, "enthalpy_j_per_g")
 
-# Create a weighted sum of the "DSC Af (°C)" and "Enthalpy (J/g)" columns
-data = create_weighted_sum(data, 0.5, 0.5, "DSC Af (°C)", "Enthalpy (J/g)")
+# Create a weighted sum of the "dsc_af_c" and "enthalpy_j_per_g" columns
+data = create_weighted_sum(data, 0.5, 0.5, "dsc_af_c", "enthalpy_j_per_g")
 
 # Interpolate the weighted sum values
 z4 = interpolate_data(data, x_grid, y_grid, "Weighted Sum")
@@ -77,14 +99,14 @@ color_mapper1 = LinearColorMapper(
 
 # Create a color mapper for Enthalpy
 color_mapper2 = LinearColorMapper(
-    palette="Viridis256",
+    palette="Inferno256",
     low=np.min(z2[z2 > -9999]),
     high=np.max(z2[z2 > -9999]),
     nan_color="white",
 )
 
 color_mapper4 = LinearColorMapper(
-    palette="Viridis256",
+    palette="Turbo256",
     low=np.min(z4[z4 > -9999]),
     high=np.max(z4[z4 > -9999]),
     nan_color="white",
@@ -96,12 +118,12 @@ source = ColumnDataSource(data)
 # Create a hover tool
 hover = create_hover_tool(
     [
-        ("Cu", "@{Cu (at%)}"),
-        ("Al", "@{Al (at%)}"),
-        ("Mn", "@{Mn (at%)}"),
-        ("Ni", "@{Ni (at%)}"),
-        ("DSC Af", "@{DSC Af (°C)}"),
-        ("Enthalpy", "@{Enthalpy (J/g)}"),
+        ("Cu", "@cu_at_percent"),
+        ("Al", "@al_at_percent"),
+        ("Mn", "@mn_at_percent"),
+        ("Ni", "@ni_at_percent"),
+        ("DSC Af", "@dsc_af_c"),
+        ("Enthalpy", "@enthalpy_j_per_g"),
     ]
 )
 
@@ -109,6 +131,7 @@ hover = create_hover_tool(
 p1 = create_figure(
     hover, (x.min(), x.max()), (y.min(), y.max()), "PCA and Interpolation of DSC Af"
 )
+
 
 # Add the image glyph for DSC Af
 add_image_glyph(
@@ -122,7 +145,6 @@ add_image_glyph(
 
 # Add a circle renderer with vectorized colors and sizes and a legend
 add_circle_glyph(p1, source, "Data Points")
-
 # Add a color bar for DSC Af
 add_color_bar(p1, color_mapper1)
 
@@ -167,214 +189,5 @@ add_circle_glyph(p4, source, "Data Points")
 add_color_bar(p4, color_mapper4)
 show_figure(p4)
 save_figure(p4, "plot4.png")
-
-
-# # %%
-# from bokeh.plotting import figure, show
-# from bokeh.models import (
-#     HoverTool,
-#     ColumnDataSource,
-#     LinearColorMapper,
-#     ColorBar,
-#     HoverTool,
-# )
-# from bokeh.io import output_notebook, export_png
-# from sklearn.decomposition import PCA
-# import pandas as pd
-# import numpy as np
-# from scipy.interpolate import griddata
-
-# # Read the data
-# data = pd.read_csv("CuAlMnNi-data.csv")
-
-# # Perform PCA
-# pca = PCA(n_components=2)
-# pca_result = pca.fit_transform(data[["Cu (at%)", "Al (at%)", "Mn (at%)", "Ni (at%)"]])
-
-# # Add the PCA results to the data frame
-# data["PC1"] = pca_result[:, 0]
-# data["PC2"] = pca_result[:, 1]
-
-# # Define the grid
-# x = np.linspace(data["PC1"].min(), data["PC1"].max(), 500)
-# y = np.linspace(data["PC2"].min(), data["PC2"].max(), 500)
-# x_grid, y_grid = np.meshgrid(x, y)
-
-# # Interpolate the DSC Af values
-# z1 = griddata(
-#     (data["PC1"], data["PC2"]), data["DSC Af (°C)"], (x_grid, y_grid), method="cubic"
-# )
-
-# # Interpolate the Enthalpy values
-# z2 = griddata(
-#     (data["PC1"], data["PC2"]), data["Enthalpy (J/g)"], (x_grid, y_grid), method="cubic"
-# )
-
-# # Define the weights
-# weight1 = 0.5
-# weight2 = 0.5
-
-# # Create a weighted sum of the "DSC Af (°C)" and "Enthalpy (J/g)" columns
-# data["Weighted Sum"] = weight1 * data["DSC Af (°C)"] + weight2 * data["Enthalpy (J/g)"]
-
-# # Interpolate the weighted sum values
-# z4 = griddata(
-#     (data["PC1"], data["PC2"]), data["Weighted Sum"], (x_grid, y_grid), method="cubic"
-# )
-
-
-# # Create a ColumnDataSource from data
-# source = ColumnDataSource(data)
-
-# # Create a hover tool
-# hover = HoverTool(
-#     tooltips=[
-#         ("Cu", "@{Cu (at%)}"),
-#         ("Al", "@{Al (at%)}"),
-#         ("Mn", "@{Mn (at%)}"),
-#         ("Ni", "@{Ni (at%)}"),
-#         ("DSC Af", "@{DSC Af (°C)}"),
-#         ("Enthalpy", "@{Enthalpy (J/g)}"),
-#     ]
-# )
-
-# # Create a new plot with the hover tool and a title
-# p = figure(
-#     tools=[hover],
-#     x_range=(x.min(), x.max()),
-#     y_range=(y.min(), y.max()),
-#     title="PCA and Interpolation of CuAlMnNi Data",
-# )
-
-# # # Add a circle renderer with vectorized colors and sizes
-# # p.circle("PC1", "PC2", source=source, fill_color="blue", size=5)
-
-# # Replace NaN values with a specific number
-# z1 = np.nan_to_num(z1, nan=-9999)
-# z2 = np.nan_to_num(z2, nan=-9999)
-# z4 = np.nan_to_num(z4, nan=-9999)
-
-
-# # Create a color mapper for DSC Af
-# color_mapper1 = LinearColorMapper(
-#     palette="Viridis256",
-#     low=np.min(z1[z1 > -9999]),
-#     high=np.max(z1[z1 > -9999]),
-#     nan_color="white",
-# )
-
-# # Create a color mapper for Enthalpy
-# color_mapper2 = LinearColorMapper(
-#     palette="Viridis256",
-#     low=np.min(z2[z2 > -9999]),
-#     high=np.max(z2[z2 > -9999]),
-#     nan_color="white",
-# )
-
-# color_mapper4 = LinearColorMapper(
-#     palette="Viridis256",
-#     low=np.min(z4[z4 > -9999]),
-#     high=np.max(z4[z4 > -9999]),
-#     nan_color="white",
-# )
-
-
-# # Create a new plot for DSC Af
-# p1 = figure(
-#     tools=[hover],
-#     x_range=(x.min(), x.max()),
-#     y_range=(y.min(), y.max()),
-#     title="PCA and Interpolation of DSC Af",
-# )
-
-# # Add the image glyph for DSC Af
-# p1.image(
-#     image=[z1],
-#     x=x.min(),
-#     y=y.min(),
-#     dw=(x.max() - x.min()),
-#     dh=(y.max() - y.min()),
-#     color_mapper=color_mapper1,
-#     legend_label="Interpolated DSC Af",
-# )
-
-# # Add a circle renderer with vectorized colors and sizes and a legend
-# p1.circle(
-#     "PC1", "PC2", source=source, fill_color="white", size=10, legend_label="Data Points"
-# )
-
-# # Add a color bar for DSC Af
-# color_bar1 = ColorBar(color_mapper=color_mapper1, location=(0, 0))
-# p1.add_layout(color_bar1, "right")
-
-# # Create a new plot for Enthalpy
-# p2 = figure(
-#     tools=[hover],
-#     x_range=(x.min(), x.max()),
-#     y_range=(y.min(), y.max()),
-#     title="PCA and Interpolation of Enthalpy",
-# )
-
-# # Add the image glyph for Enthalpy
-# p2.image(
-#     image=[z2],
-#     x=x.min(),
-#     y=y.min(),
-#     dw=(x.max() - x.min()),
-#     dh=(y.max() - y.min()),
-#     color_mapper=color_mapper2,
-#     legend_label="Interpolated Enthalpy",
-# )
-
-# # Add a circle renderer with vectorized colors and sizes and a legend
-# p2.circle(
-#     "PC1", "PC2", source=source, fill_color="white", size=10, legend_label="Data Points"
-# )
-
-
-# # Add a color bar for Enthalpy
-# color_bar2 = ColorBar(color_mapper=color_mapper2, location=(0, 0))
-# p2.add_layout(color_bar2, "right")
-
-# # Create a new plot for the weighted sum values
-# p4 = figure(
-#     tools=[hover],
-#     x_range=(x.min(), x.max()),
-#     y_range=(y.min(), y.max()),
-#     title="PCA and Interpolation of Weighted Sum",
-# )
-
-# # Add the image glyph for the weighted sum values
-# p4.image(
-#     image=[z4],
-#     x=x.min(),
-#     y=y.min(),
-#     dw=(x.max() - x.min()),
-#     dh=(y.max() - y.min()),
-#     color_mapper=color_mapper4,
-#     legend_label="Interpolated Weighted Sum",
-# )
-
-# # Add a circle renderer with vectorized colors and sizes and a legend
-# p4.circle(
-#     "PC1", "PC2", source=source, fill_color="white", size=10, legend_label="Data Points"
-# )
-
-# # Add a color bar for the weighted sum values
-# color_bar4 = ColorBar(color_mapper=color_mapper4, location=(0, 0))
-# p4.add_layout(color_bar4, "right")
-
-
-# # Show the plots
-# output_notebook()
-# show(p1)
-# show(p2)
-# show(p4)
-
-# # Save the plots as PNG images
-# export_png(p1, filename="DSC_Af.png")
-# export_png(p2, filename="Enthalpy.png")
-# export_png(p4, filename="Weighted.png")
-
 
 # %%
