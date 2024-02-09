@@ -55,9 +55,24 @@ data = perform_pca(
 )
 
 # Define the grid
-x = np.linspace(data["PC1"].min(), data["PC1"].max(), 500)
-y = np.linspace(data["PC2"].min(), data["PC2"].max(), 500)
-x_grid, y_grid = define_grid(data, 500)
+num_points = 500
+x = np.linspace(data["PC1"].min(), data["PC1"].max(), num_points)
+y = np.linspace(data["PC2"].min(), data["PC2"].max(), num_points)
+x_grid, y_grid = define_grid(data, num_points)
+
+
+# Check for duplicates in the 'cu_at_percent', 'al_at_percent', 'mn_at_percent', 'ni_at_percent' columns
+duplicates = data[
+    ["cu_at_percent", "al_at_percent", "mn_at_percent", "ni_at_percent"]
+].duplicated(keep=False)
+
+# Print the number of duplicates
+print(f"Number of duplicate rows: {duplicates.sum()}")
+
+# If you want to see the actual duplicate rows:
+print("Duplicate Rows:")
+data[duplicates]
+
 
 # Interpolate the DSC Af values
 z1 = interpolate_data(data, x_grid, y_grid, "dsc_af_c")
@@ -72,25 +87,26 @@ data = create_weighted_sum(data, 0.5, 0.5, "dsc_af_c", "enthalpy_j_per_g")
 z4 = interpolate_data(data, x_grid, y_grid, "Weighted Sum")
 
 # Create a color mapper for DSC Af
+SENTINEL_VALUE = -9999
 color_mapper1 = LinearColorMapper(
     palette="Viridis256",
-    low=np.min(z1[z1 > -9999]),
-    high=np.max(z1[z1 > -9999]),
+    low=np.min(z1[z1 > SENTINEL_VALUE]),
+    high=np.max(z1[z1 > SENTINEL_VALUE]),
     nan_color="white",
 )
 
 # Create a color mapper for Enthalpy
 color_mapper2 = LinearColorMapper(
     palette="Inferno256",
-    low=np.min(z2[z2 > -9999]),
-    high=np.max(z2[z2 > -9999]),
+    low=np.min(z2[z2 > SENTINEL_VALUE]),
+    high=np.max(z2[z2 > SENTINEL_VALUE]),
     nan_color="white",
 )
 
 color_mapper4 = LinearColorMapper(
     palette="Turbo256",
-    low=np.min(z4[z4 > -9999]),
-    high=np.max(z4[z4 > -9999]),
+    low=np.min(z4[z4 > SENTINEL_VALUE]),
+    high=np.max(z4[z4 > SENTINEL_VALUE]),
     nan_color="white",
 )
 
