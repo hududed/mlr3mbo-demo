@@ -45,24 +45,6 @@ data = read_data("CuAlMnNi-data.csv")
 print(data.columns)
 
 data = clean_column_names(data)
-# # Perform the cleaning
-# cleaned_columns = (
-#     data.columns.str.strip()
-#     .str.lower()
-#     .str.replace(" ", "_")
-#     .str.replace("(", "")
-#     .str.replace(")", "")
-#     .str.replace("#", "number")
-#     .str.replace("°c", "c")
-#     .str.replace("j/g", "j_per_g")
-#     .str.replace("at%", "at_percent")
-# )
-
-# # Create a dictionary that maps the old names to the new ones
-# column_mapping = dict(zip(data.columns, cleaned_columns))
-
-# # Replace the column names in place
-# data.rename(columns=column_mapping, inplace=True)
 
 print(data.columns)
 
