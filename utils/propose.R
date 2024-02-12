@@ -8,7 +8,7 @@ library(tibble)
 source("mlr3mbo-demo/utils/processing.R") # for colab, adjust this if run locally
 
 propose_experiment <- function(data, metadata) {
-    set.seed(42)
+    set.seed(metadata$seed)
     data = as.data.table(data) # data.csv is queried `table`
 
     # retrieve this from metadata parameter_ranges

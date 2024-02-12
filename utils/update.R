@@ -9,7 +9,7 @@ library(R.utils)
 source("mlr3mbo-demo/utils/processing.R") # for colab, adjust this if run locally
 
 update_experiment <- function(data, metadata) {
-    set.seed(42)
+    set.seed(metadata$seed)
     result = load_archive(metadata)
     full_data = as.data.table(data)
     # print(data)
@@ -55,10 +55,12 @@ update_experiment <- function(data, metadata) {
 
     x2_dt <- as.data.table(x2)
     full_data <- rbindlist(list(full_data, x2_dt), fill = TRUE)
-    # Recalculate the Cu column
-    full_data[is.na(Cu), Cu := 100 - Reduce(`+`, .SD), .SDcols = setdiff(names(data), c("Cu", "DSC_Af"))]
+    # Recalculate the ignored column
+    full_data[is.na(get(metadata$calculated_column)), (metadata$calculated_column) := 100 - Reduce(`+`, .SD), .SDcols = setdiff(names(data), c(metadata$calculated_column, metadata$output_column_names))]
+    # full_data[is.na(metadata$calculated_column), Cu := 100 - Reduce(`+`, .SD), .SDcols = setdiff(names(data), c("Cu", "DSC_Af"))]
     # Reorder the columns to move Cu to the left-most position
-    setcolorder(full_data, c("Cu", setdiff(names(full_data), "Cu")))
+    setcolorder(full_data, c(metadata$calculated_column, setdiff(names(full_data), metadata$calculated_column)))
+    # setcolorder(full_data, c("Cu", setdiff(names(full_data), "Cu")))
     print(full_data)
 
     # Save the data table as a CSV file in the same directory
