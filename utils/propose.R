@@ -49,8 +49,8 @@ propose_experiment <- function(data, metadata) {
         
         # Add the parameter to the search space
         if (param_info == 'float') {
-            values = seq(lower,upper, by=0.2)
-            search_space$add(ParamDbl$new(id = param_name, lower = lower, upper = upper)) # TODO: Trafo since levels are inf, but id doesnt work with p_int
+            values = seq(lower,upper, by=metadata$to_nearest)
+            search_space$add(ParamDbl$new(id = param_name, lower = lower, upper = upper)) 
         } else if (param_info == 'integer') {
             search_space$add(ParamInt$new(id = param_name, lower = lower, upper = upper))
         }
@@ -99,9 +99,9 @@ propose_experiment <- function(data, metadata) {
     x2_dt <- as.data.table(x2)
     data <- rbindlist(list(data, x2_dt), fill = TRUE)
 
-    data[, Cu := 100 - Reduce(`+`, .SD), .SDcols = -ncol(data)]
+    data[, metadata$calculated_column := 100 - Reduce(`+`, .SD), .SDcols = -ncol(data)]
     # Reorder the columns to move Cu to the left-most position
-    setcolorder(data, c("Cu", setdiff(names(data), "Cu")))
+    setcolorder(data, c(metadata$calculated_column, setdiff(names(data), metadata$calculated_column)))
 
     print(data)
       # Define the directory path
