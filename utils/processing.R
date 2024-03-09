@@ -91,8 +91,8 @@ add_evals_to_archive <- function(archive, acq_function, acq_optimizer, data, q, 
     # print("########## INIT ADD_EVALS_TO_ARCHIVE ##########")
     # print("FIRST CANDIDATE PROPOSED:")
     # print(candidate)
-    # tmp_archive = archive$clone(deep = TRUE)
-    # acq_function$surrogate$archive = tmp_archive
+    tmp_archive = archive$clone(deep = TRUE)
+    acq_function$surrogate$archive = tmp_archive
 
     # print("acq_function$surrogate$archive$data:")
     # print(acq_function$surrogate$archive$data)
