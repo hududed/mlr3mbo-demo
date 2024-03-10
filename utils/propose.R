@@ -107,13 +107,13 @@ propose_experiment <- function(data, metadata) {
   archive <- result[[2]]
   acq_function <- result[[3]]
 
-  print(result)
+  # print(result)
 
   x2 <- candidate[, names(metadata$parameter_info), with = FALSE]
-  print("!! New candidates x2: ")
+  print("New candidates: ")
   print(x2)
-  print("!! New archive : ")
-  print(archive)
+  # print("Archive : ")
+  # print(archive)
 
   x2_dt <- as.data.table(x2)
   data <- rbindlist(list(data, x2_dt), fill = TRUE)

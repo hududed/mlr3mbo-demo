@@ -131,8 +131,8 @@ add_evals_to_archive <- function(archive, acq_function, acq_optimizer, data, q, 
                                          tmp_archive, candidate_new,
                                          lie, metadata)
 
-    print("New candidates after constant liar batch loop: ")
-    print(candidate)
+    # print("New candidates after constant liar batch loop: ")
+    # print(candidate)
     
     # Iterate over each column in candidate
     for (col in names(candidate_new)) {
