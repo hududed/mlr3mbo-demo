@@ -84,7 +84,7 @@ propose_experiment <- function(data, metadata) {
     surrogate <- srlrn(lrn("regr.ranger"), archive = archive)
     acq_function <- acqf("ei", surrogate = surrogate)
   } else {
-    surrogate <- srlrn(list(default_gp(), default_gp()), archive = archive)
+    surrogate <- srlrn(list(default_rf(), default_rf()), archive = archive)
     acq_function <- acqf("ehvi", surrogate = surrogate)
   }
   # single or multi
